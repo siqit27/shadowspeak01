@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<title>ShadowSpeak 精听练习</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: Arial, sans-serif; background: #0f0f1a; color: #e0e0e0; min-height: 100vh; }
+  .header { background: #1a1a2e; padding: 16px 24px; border-bottom: 2px solid #2E5FA3; display: flex; align-items: center; gap: 12px; }
+  .header h1 { font-size: 22px; color: #4a9eff; }
+  .header span { color: #888; font-size: 14px; }
+  .container { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; padding: 16px; height: calc(100vh - 60px); }
+  .panel { background: #1a1a2e; border-radius: 10px; padding: 16px; border: 1px solid #2a2a4a; overflow-y: auto; }
+  .panel h2 { font-size: 14px; color: #4a9eff; margin-bottom: 12px; text-transform: uppercase; letter-spacing: 1px; }
+  input[type=text] { width: 100%; padding: 10px; background: #0f0f1a; border: 1px solid #2a2a4a; border-radius: 6px; color: #e0e0e0; font-size: 14px; margin-bottom: 8px; }
+  button { padding: 10px 16px; border-radius: 6px; border: none; cursor: pointer; font-size: 14px; font-weight: bold; transition: all 0.2s; }
+  .btn-primary { background: #2E5FA3; color: white; width: 100%; margin-bottom: 8px; }
+  .btn-primary:hover { background: #4a9eff; }
+  .btn-secondary { background: #2a2a4a; color: #e0e0e0; width: 100%; margin-bottom: 8px; }
+  .btn-secondary:hover { background: #3a3a6a; }
+  .btn-record { background: #8B0000; color: white; width: 100%; margin-bottom: 8px; }
+  .btn-record.recording { background: #ff4444; animation: pulse 1s infinite; }
+  .btn-success { background: #1a5c2a; color: white; width: 100%; margin-bottom: 8px; }
+  .btn-success:hover { background: #28a745; }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.6} }
+  .controls { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 8px; }
+  .segment-info { background: #0f0f1a; padding: 10px; border-radius: 6px; margin-bottom: 8px; font-size: 13px; color: #888; }
+  .segment-info span { color: #4a9eff; font-weight: bold; }
+  select { width: 100%; padding: 8px; background: #0f0f1a; border: 1px solid #2a2a4a; border-radius: 6px; color: #e0e0e0; font-size: 14px; margin-bottom: 8px; }
+  .transcript-text { font-size: 14px; line-height: 1.8; padding: 10px; background: #0f0f1a; border-radius: 6px; min-height: 80px; }
+  .transcript-text.hidden { filter: blur(5px); cursor: pointer; }
+  .user-text { font-size: 14px; line-height: 1.8; padding: 10px; background: #0f0f1a; border-radius: 6px; min-height: 80px; color: #ccc; margin-bottom: 8px; }
+  .score-badge { font-size: 48px; font-weight: bold; text-align: center; padding: 16px; color: #4a9eff; }
+  .tag { display: inline-block; padding: 3px 8px; border-radius: 4px; font-size: 12px; margin: 2px; }
+  .tag-correct { background: #1a5c2a; color: #4ade80; }
+  .tag-missed { background: #5c1a1a; color: #f87171; }
+  .tag-wrong { background: #5c4a1a; color: #fbbf24; }
+  .comment { font-size: 13px; color: #aaa; margin-top: 8px; padding: 8px; background: #0f0f1a; border-radius: 6px; border-left: 3px solid #2E5FA3; }
+  .progress-bar { height: 4px; background: #2a2a4a; border-radius: 2px; margin-bottom: 12px; }
+  .progress-fill { height: 100%; background: #2E5FA3; border-radius: 2px; transition: width 0.3s; }
+  .status { font-size: 12px; color: #888; margin-bottom: 8px; }
+  .summary-card { background: #0f0f1a; border-radius: 8px; padding: 12px; margin-bottom: 8px; }
+  .grade { font-size: 64px; font-weight: bold; text-align: center; color: #4a9eff; }
+  .vocab-item { padding: 8px; border-left: 3px solid #2E5FA3; margin-bottom: 6px; background: #0f0f1a; border-radius: 0 6px 6px 0; }
+  .vocab-word { font-weight: bold; color: #4a9eff; }
+  .vocab-meaning { font-size: 13px; color: #aaa; }
+  .tip-item { padding: 6px 0; font-size: 13px; border-bottom: 1px solid #2a2a4a; }
+  #player { width: 100%; border-radius: 6px; margin-bottom: 8px; }
+  .recording-time { text-align: center; font-size: 24px; color: #ff4444; font-weight: bold; margin: 8px 0; }
+  .fav-card { background: #0f0f1a; border: 1px solid #2a2a4a; border-radius: 6px; padding: 8px 12px; cursor: pointer; max-width: 240px; }
+  .fav-card:hover { border-color: #4a9eff; }
+  .fav-title { font-size: 13px; color: #4a9eff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .fav-meta { font-size: 11px; color: #666; margin-top: 2px; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>🎧 ShadowSpeak</h1>
+  <span>英语精听练习工具</span>
+  <div style="margin-left:auto;display:flex;gap:8px;">
+    <button onclick="toggleFavorites()" style="padding:6px 14px;background:#2a2a4a;border:none;border-radius:6px;color:#aaa;cursor:pointer;font-size:13px;">⭐ 收藏夹</button>
+    <button onclick="saveFavorite()" id="saveBtn" style="padding:6px 14px;background:#1a5c2a;border:none;border-radius:6px;color:#4ade80;cursor:pointer;font-size:13px;display:none;">💾 收藏此视频</button>
+  </div>
+</div>
+
+<div id="favPanel" style="display:none;background:#1a1a2e;border-bottom:1px solid #2a2a4a;padding:12px 24px;">
+  <div style="font-size:13px;color:#888;margin-bottom:8px;">收藏的视频</div>
+  <div id="favList" style="display:flex;flex-wrap:wrap;gap:8px;"></div>
+</div>
+
+<div class="container">
+  <div class="panel">
+    <h2>📺 视频控制</h2>
+    <input type="text" id="urlInput" placeholder="粘贴YouTube视频链接...">
+    <select id="segmentLength">
+      <option value="10">每段10秒</option>
+      <option value="15" selected>每段15秒</option>
+      <option value="20">每段20秒</option>
+      <option value="30">每段30秒</option>
+    </select>
+    <button class="btn-primary" onclick="loadVideo()">🔍 加载视频</button>
+    <div id="player"></div>
+    <div class="segment-info">
+      第 <span id="currentSeg">-</span> 段 / 共 <span id="totalSeg">-</span> 段
+      &nbsp;|&nbsp; <span id="segTime">-</span>
+    </div>
+    <div class="progress-bar"><div class="progress-fill" id="progressFill" style="width:0%"></div></div>
+    <div class="controls">
+      <button class="btn-secondary" onclick="prevSegment()">⏮ 上一段</button>
+      <button class="btn-secondary" onclick="replaySegment()">🔁 重播</button>
+      <button class="btn-secondary" onclick="playSegment()">▶ 播放</button>
+      <button class="btn-secondary" onclick="skipSegment()">⏭ 跳过</button>
+    </div>
+  </div>
+
+  <div class="panel">
+    <h2>🎙 复述区</h2>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+      <span style="font-size:13px;color:#888;">原文</span>
+      <button style="padding:4px 10px;font-size:12px;background:#2a2a4a;border:none;border-radius:4px;color:#aaa;cursor:pointer;" onclick="toggleText()">👁 显示/隐藏</button>
+    </div>
+    <div class="transcript-text hidden" id="originalText">加载视频后显示原文...</div>
+    <div style="margin:12px 0;border-top:1px solid #2a2a4a;"></div>
+    <div style="font-size:13px;color:#888;margin-bottom:6px;">你的复述</div>
+    <div class="user-text" id="userText">录音后显示转写文字...</div>
+    <div class="recording-time" id="recordingTime" style="display:none">0:00</div>
+    <div class="status" id="recordStatus">等待播放视频...</div>
+    <button class="btn-record" id="recordBtn" onclick="toggleRecord()" disabled>🎙 开始复述</button>
+    <button class="btn-success" id="submitBtn" onclick="submitScore()" disabled>✅ 提交复述</button>
+    <button class="btn-primary" id="summaryBtn" onclick="getSummary()" style="display:none">📊 生成总结报告</button>
+  </div>
+
+  <div class="panel">
+    <h2>📊 评分反馈</h2>
+    <div id="scoreArea">
+      <div style="text-align:center;color:#444;padding:40px 0;font-size:14px;">完成复述后查看评分</div>
+    </div>
+  </div>
+</div>
+
+<script>
+let player, segments = [], currentSegIdx = 0;
+let isRecording = false, mediaRecorder = null, audioChunks = [];
+let textVisible = false, recordTimer = null, recordSeconds = 0;
+let allScores = [], allMissed = [];
+let segmentDone = false;
+let favoritesCache = [];
+
+const tag = document.createElement('script');
+tag.src = "https://www.youtube.com/iframe_api";
+document.head.appendChild(tag);
+
+window.onYouTubeIframeAPIReady = function() {
+  player = new YT.Player('player', {
+    height: '160', width: '100%',
+    playerVars: { controls: 0, rel: 0 },
+    events: { onStateChange: onPlayerStateChange }
+  });
+};
+
+function onPlayerStateChange(e) {
+  if (e.data === YT.PlayerState.PLAYING) { checkSegmentEnd(); }
+}
+
+let segEndTimer = null;
+function checkSegmentEnd() {
+  if (segEndTimer) clearInterval(segEndTimer);
+  segEndTimer = setInterval(() => {
+    if (!player) return;
+    const t = player.getCurrentTime();
+    const seg = segments[currentSegIdx];
+    if (seg && t >= seg.end) {
+      player.pauseVideo();
+      clearInterval(segEndTimer);
+      setStatus('播放完毕 — 点击「开始复述」');
+      document.getElementById('recordBtn').disabled = false;
+      document.getElementById('originalText').classList.remove('hidden');
+    }
+  }, 200);
+}
+
+async function loadVideo() {
+  const url = document.getElementById('urlInput').value.trim();
+  if (!url) return alert('请输入YouTube链接');
+  setStatus('正在获取字幕...');
+  try {
+    const res = await fetch('/transcript', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({url})
+    });
+    const data = await res.json();
+    if (data.error) { alert(data.error); return; }
+    const segLen = parseInt(document.getElementById('segmentLength').value);
+    buildSegments(data.transcript, segLen);
+    player.loadVideoById({videoId: data.video_id, startSeconds: 0});
+    player.pauseVideo();
+    document.getElementById('totalSeg').textContent = segments.length;
+    currentSegIdx = 0;
+    updateSegInfo();
+    setStatus('视频加载完毕 — 点击「播放」开始');
+    document.getElementById('saveBtn').style.display = 'inline-block';
+  } catch(e) { alert('加载失败：' + e.message); }
+}
+
+function buildSegments(transcript, segLen) {
+  segments = [];
+  if (!transcript.length) return;
+  const total = transcript[transcript.length-1].start + transcript[transcript.length-1].duration;
+  for (let t = 0; t < total; t += segLen) {
+    const end = Math.min(t + segLen, total);
+    const words = transcript.filter(x => x.start >= t && x.start < end).map(x => x.text).join(' ');
+    if (words.trim()) segments.push({start: t, end, text: words.trim()});
+  }
+}
+
+function updateSegInfo() {
+  const seg = segments[currentSegIdx];
+  if (!seg) return;
+  document.getElementById('currentSeg').textContent = currentSegIdx + 1;
+  document.getElementById('segTime').textContent = fmt(seg.start) + ' - ' + fmt(seg.end);
+  document.getElementById('progressFill').style.width = ((currentSegIdx+1)/segments.length*100) + '%';
+  document.getElementById('originalText').textContent = seg.text;
+  document.getElementById('originalText').classList.add('hidden');
+  document.getElementById('userText').textContent = '录音后显示转写文字...';
+  document.getElementById('recordBtn').disabled = true;
+  document.getElementById('submitBtn').disabled = true;
+  segmentDone = false;
+}
+
+function fmt(s) {
+  const m = Math.floor(s/60), sec = Math.floor(s%60);
+  return m + ':' + String(sec).padStart(2,'0');
+}
+
+function playSegment() {
+  if (!segments.length) return;
+  const seg = segments[currentSegIdx];
+  player.seekTo(seg.start);
+  player.playVideo();
+  setStatus('播放中...');
+  document.getElementById('recordBtn').disabled = true;
+}
+
+function replaySegment() { playSegment(); }
+
+function prevSegment() {
+  if (currentSegIdx > 0) { currentSegIdx--; updateSegInfo(); setStatus('点击「播放」开始'); }
+}
+
+function skipSegment() {
+  if (currentSegIdx < segments.length - 1) {
+    currentSegIdx++; updateSegInfo(); setStatus('已跳过 — 点击「播放」继续');
+  } else { showSummaryBtn(); }
+}
+
+async function toggleRecord() {
+  if (!isRecording) {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({audio: true});
+      audioChunks = [];
+      mediaRecorder = new MediaRecorder(stream);
+      mediaRecorder.ondataavailable = e => audioChunks.push(e.data);
+      mediaRecorder.onstop = async () => { stream.getTracks().forEach(t => t.stop()); await processAudio(); };
+      mediaRecorder.start();
+      document.getElementById('originalText').classList.add('hidden');
+      isRecording = true;
+      document.getElementById('recordBtn').textContent = '⏹ 停止录音';
+      document.getElementById('recordBtn').classList.add('recording');
+      document.getElementById('recordingTime').style.display = 'block';
+      recordSeconds = 0;
+      recordTimer = setInterval(() => {
+        recordSeconds++;
+        const m = Math.floor(recordSeconds/60), s = recordSeconds%60;
+        document.getElementById('recordingTime').textContent = m+':'+String(s).padStart(2,'0');
+      }, 1000);
+      setStatus('录音中...');
+    } catch(e) { alert('无法访问麦克风：' + e.message); }
+  } else {
+    mediaRecorder.stop();
+    isRecording = false;
+    document.getElementById('recordBtn').textContent = '🎙 重新录音';
+    document.getElementById('recordBtn').classList.remove('recording');
+    document.getElementById('recordingTime').style.display = 'none';
+    clearInterval(recordTimer);
+    setStatus('正在转写...');
+  }
+}
+
+async function processAudio() {
+  const blob = new Blob(audioChunks, {type: 'audio/webm'});
+  const formData = new FormData();
+  formData.append('audio', blob, 'audio.webm');
+  try {
+    const res = await fetch('/transcribe', {method:'POST', body: formData});
+    const data = await res.json();
+    if (data.error) { setStatus('转写失败：' + data.error); return; }
+    document.getElementById('userText').textContent = data.text;
+    document.getElementById('submitBtn').disabled = false;
+    setStatus('转写完成 — 点击「提交复述」评分');
+  } catch(e) { setStatus('转写失败：' + e.message); }
+}
+
+async function submitScore() {
+  const original = segments[currentSegIdx].text;
+  const userText = document.getElementById('userText').textContent;
+  setStatus('AI评分中...');
+  document.getElementById('submitBtn').disabled = true;
+  try {
+    const res = await fetch('/score', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({original, user_text: userText})
+    });
+    const data = await res.json();
+    renderScore(data);
+    allScores.push({score: data.score, idx: currentSegIdx});
+    if (data.missed) allMissed.push(...data.missed);
+    setStatus('评分完成 — 点击「下一段」继续');
+    segmentDone = true;
+    if (currentSegIdx < segments.length - 1) {
+      const nextBtn = document.createElement('button');
+      nextBtn.className = 'btn-primary';
+      nextBtn.textContent = '▶ 下一段';
+      nextBtn.style.marginTop = '8px';
+      nextBtn.onclick = () => { currentSegIdx++; updateSegInfo(); setStatus('点击「播放」开始'); nextBtn.remove(); };
+      document.querySelector('.panel:nth-child(2)').appendChild(nextBtn);
+    } else { showSummaryBtn(); }
+  } catch(e) { setStatus('评分失败：' + e.message); }
+}
+
+function renderScore(data) {
+  const score = data.score || 0;
+  const color = score >= 80 ? '#4ade80' : score >= 60 ? '#fbbf24' : '#f87171';
+  let html = `<div class="score-badge" style="color:${color}">${score}</div>`;
+  if (data.correct?.length) {
+    html += '<div style="margin-top:8px;font-size:12px;color:#888;">说对了</div>';
+    html += data.correct.map(w => `<span class="tag tag-correct">✓ ${w}</span>`).join('');
+  }
+  if (data.missed?.length) {
+    html += '<div style="margin-top:8px;font-size:12px;color:#888;">漏掉了</div>';
+    html += data.missed.map(w => `<span class="tag tag-missed">✗ ${w}</span>`).join('');
+  }
+  if (data.wrong?.length) {
+    html += '<div style="margin-top:8px;font-size:12px;color:#888;">说错了</div>';
+    html += data.wrong.map(w => `<span class="tag tag-wrong">⚠ ${w}</span>`).join('');
+  }
+  if (data.comment) html += `<div class="comment">💬 ${data.comment}</div>`;
+  document.getElementById('scoreArea').innerHTML = html;
+}
+
+function showSummaryBtn() {
+  document.getElementById('summaryBtn').style.display = 'block';
+  setStatus('🎉 全部完成！点击「生成总结报告」');
+}
+
+async function getSummary() {
+  document.getElementById('summaryBtn').disabled = true;
+  setStatus('生成报告中...');
+  try {
+    const res = await fetch('/summary', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({scores: allScores, all_missed: allMissed})
+    });
+    const data = await res.json();
+    renderSummary(data);
+  } catch(e) { setStatus('生成失败：' + e.message); }
+}
+
+function renderSummary(data) {
+  const gradeColor = {'A':'#4ade80','B':'#a3e635','C':'#fbbf24','D':'#f87171'}[data.grade] || '#4a9eff';
+  let html = `<div class="summary-card">
+    <div class="grade" style="color:${gradeColor}">${data.grade || 'B'}</div>
+    <div style="text-align:center;font-size:28px;color:#aaa;margin-bottom:8px;">${data.overall_score}分</div>
+    <div style="font-size:13px;color:#aaa;text-align:center;">${data.summary || ''}</div>
+  </div>`;
+  if (data.weak_spots?.length) {
+    html += '<div style="font-size:13px;color:#888;margin:8px 0;">需要改进</div>';
+    html += data.weak_spots.map(w => `<div class="tip-item">⚠ ${w}</div>`).join('');
+  }
+  if (data.vocabulary?.length) {
+    html += '<div style="font-size:13px;color:#888;margin:8px 0;">词汇解释</div>';
+    html += data.vocabulary.map(v => `<div class="vocab-item">
+      <div class="vocab-word">${v.word}</div>
+      <div class="vocab-meaning">${v.meaning}</div>
+      <div style="font-size:12px;color:#666;margin-top:2px;">${v.example || ''}</div>
+    </div>`).join('');
+  }
+  if (data.tips?.length) {
+    html += '<div style="font-size:13px;color:#888;margin:8px 0;">提升建议</div>';
+    html += data.tips.map(t => `<div class="tip-item">💡 ${t}</div>`).join('');
+  }
+  document.getElementById('scoreArea').innerHTML = html;
+}
+
+function toggleText() {
+  document.getElementById('originalText').classList.toggle('hidden');
+}
+
+function setStatus(msg) {
+  document.getElementById('recordStatus').textContent = msg;
+}
+
+async function toggleFavorites() {
+  const panel = document.getElementById('favPanel');
+  if (panel.style.display === 'none') {
+    await loadFavorites();
+    panel.style.display = 'block';
+  } else {
+    panel.style.display = 'none';
+  }
+}
+
+async function loadFavorites() {
+  const res = await fetch('/favorites');
+  const favs = await res.json();
+  favoritesCache = favs;
+  const list = document.getElementById('favList');
+  if (!favs.length) {
+    list.innerHTML = '<span style="color:#444;font-size:13px;">还没有收藏</span>';
+    return;
+  }
+  list.innerHTML = favs.map((f, i) => `
+    <div class="fav-card" data-idx="${i}" onclick="loadFromFavoriteIdx(this)">
+      <div class="fav-title">${f.title}</div>
+      <div class="fav-meta">${f.date} · 平均${f.score}分</div>
+    </div>
+  `).join('');
+}
+
+function loadFromFavoriteIdx(el) {
+  const idx = parseInt(el.getAttribute('data-idx'));
+  const url = favoritesCache[idx].url;
+  document.getElementById('urlInput').value = url;
+  document.getElementById('favPanel').style.display = 'none';
+  loadVideo();
+}
+
+async function saveFavorite() {
+  const url = document.getElementById('urlInput').value.trim();
+  if (!url) return;
+  const avg = allScores.length ? Math.round(allScores.reduce((a,b) => a+b.score, 0) / allScores.length) : '-';
+  const date = new Date().toLocaleDateString('zh-CN');
+  await fetch('/favorites', {
+    method: 'POST',
+    headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({url, title: url, date, score: avg})
+  });
+  alert('已收藏！');
+}
+</script>
+</body>
+</html>
