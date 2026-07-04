@@ -3,3 +3,4 @@ youtube-transcript-api
 anthropic
 groq
 python-dotenv
+gunicorn
