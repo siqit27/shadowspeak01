@@ -1,122 +1,547 @@
 <!DOCTYPE html>
-<html lang="zh">
+<html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>ShadowSpeak 精听练习</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ShadowSpeak · Deep Listening Practice</title>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-JSDC2QTBVX"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-JSDC2QTBVX');
+</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@600;700;800&family=Work+Sans:wght@400;500;600;700&family=Martian+Mono:wght@400;500;700&display=swap" rel="stylesheet">
 <style>
+  :root {
+    --bg:        #16140f;
+    --bg-raised: #201d17;
+    --bg-sunken: #100e0a;
+    --bg-lcd:    #0c1210;
+    --line:      #322d22;
+    --line-soft: #241f18;
+
+    --ink:       #ede6d6;
+    --ink-dim:   #9a9182;
+    --ink-faint: #5c5648;
+
+    --amber:     #e8a33d;
+    --amber-dim: #7a5a26;
+    --teal:      #5fd6c4;
+    --coral:     #d9573c;
+    --violet:    #a97bc4;
+
+    --radius: 10px;
+    --radius-sm: 6px;
+
+    --sp-1: 4px;  --sp-2: 8px;  --sp-3: 12px;
+    --sp-4: 16px; --sp-5: 24px; --sp-6: 32px;
+
+    --font-display: 'Big Shoulders Display', 'Arial Narrow', sans-serif;
+    --font-body: 'Work Sans', 'Segoe UI', sans-serif;
+    --font-mono: 'Martian Mono', ui-monospace, monospace;
+  }
+
   * { box-sizing: border-box; margin: 0; padding: 0; }
-  body { font-family: Arial, sans-serif; background: #0f0f1a; color: #e0e0e0; min-height: 100vh; }
-  .header { background: #1a1a2e; padding: 16px 24px; border-bottom: 2px solid #2E5FA3; display: flex; align-items: center; gap: 12px; }
-  .header h1 { font-size: 22px; color: #4a9eff; }
-  .header span { color: #888; font-size: 14px; }
-  .container { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; padding: 16px; height: calc(100vh - 60px); }
-  .panel { background: #1a1a2e; border-radius: 10px; padding: 16px; border: 1px solid #2a2a4a; overflow-y: auto; }
-  .panel h2 { font-size: 14px; color: #4a9eff; margin-bottom: 12px; text-transform: uppercase; letter-spacing: 1px; }
-  input[type=text] { width: 100%; padding: 10px; background: #0f0f1a; border: 1px solid #2a2a4a; border-radius: 6px; color: #e0e0e0; font-size: 14px; margin-bottom: 8px; }
-  button { padding: 10px 16px; border-radius: 6px; border: none; cursor: pointer; font-size: 14px; font-weight: bold; transition: all 0.2s; }
-  .btn-primary { background: #2E5FA3; color: white; width: 100%; margin-bottom: 8px; }
-  .btn-primary:hover { background: #4a9eff; }
-  .btn-secondary { background: #2a2a4a; color: #e0e0e0; width: 100%; margin-bottom: 8px; }
-  .btn-secondary:hover { background: #3a3a6a; }
-  .btn-record { background: #8B0000; color: white; width: 100%; margin-bottom: 8px; }
-  .btn-record.recording { background: #ff4444; animation: pulse 1s infinite; }
-  .btn-success { background: #1a5c2a; color: white; width: 100%; margin-bottom: 8px; }
-  .btn-success:hover { background: #28a745; }
-  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.6} }
-  .controls { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 8px; }
-  .segment-info { background: #0f0f1a; padding: 10px; border-radius: 6px; margin-bottom: 8px; font-size: 13px; color: #888; }
-  .segment-info span { color: #4a9eff; font-weight: bold; }
-  select { width: 100%; padding: 8px; background: #0f0f1a; border: 1px solid #2a2a4a; border-radius: 6px; color: #e0e0e0; font-size: 14px; margin-bottom: 8px; }
-  .transcript-text { font-size: 14px; line-height: 1.8; padding: 10px; background: #0f0f1a; border-radius: 6px; min-height: 80px; }
-  .transcript-text.hidden { filter: blur(5px); cursor: pointer; }
-  .user-text { font-size: 14px; line-height: 1.8; padding: 10px; background: #0f0f1a; border-radius: 6px; min-height: 80px; color: #ccc; margin-bottom: 8px; }
-  .score-badge { font-size: 48px; font-weight: bold; text-align: center; padding: 16px; color: #4a9eff; }
-  .tag { display: inline-block; padding: 3px 8px; border-radius: 4px; font-size: 12px; margin: 2px; }
-  .tag-correct { background: #1a5c2a; color: #4ade80; }
-  .tag-missed { background: #5c1a1a; color: #f87171; }
-  .tag-wrong { background: #5c4a1a; color: #fbbf24; }
-  .comment { font-size: 13px; color: #aaa; margin-top: 8px; padding: 8px; background: #0f0f1a; border-radius: 6px; border-left: 3px solid #2E5FA3; }
-  .progress-bar { height: 4px; background: #2a2a4a; border-radius: 2px; margin-bottom: 12px; }
-  .progress-fill { height: 100%; background: #2E5FA3; border-radius: 2px; transition: width 0.3s; }
-  .status { font-size: 12px; color: #888; margin-bottom: 8px; }
-  .summary-card { background: #0f0f1a; border-radius: 8px; padding: 12px; margin-bottom: 8px; }
-  .grade { font-size: 64px; font-weight: bold; text-align: center; color: #4a9eff; }
-  .vocab-item { padding: 8px; border-left: 3px solid #2E5FA3; margin-bottom: 6px; background: #0f0f1a; border-radius: 0 6px 6px 0; }
-  .vocab-word { font-weight: bold; color: #4a9eff; }
-  .vocab-meaning { font-size: 13px; color: #aaa; }
-  .tip-item { padding: 6px 0; font-size: 13px; border-bottom: 1px solid #2a2a4a; }
-  #player { width: 100%; border-radius: 6px; margin-bottom: 8px; }
-  .recording-time { text-align: center; font-size: 24px; color: #ff4444; font-weight: bold; margin: 8px 0; }
-  .fav-card { background: #0f0f1a; border: 1px solid #2a2a4a; border-radius: 6px; padding: 8px 12px; cursor: pointer; max-width: 240px; }
-  .fav-card:hover { border-color: #4a9eff; }
-  .fav-title { font-size: 13px; color: #4a9eff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .fav-meta { font-size: 11px; color: #666; margin-top: 2px; }
+
+  body {
+    font-family: var(--font-body);
+    background: var(--bg);
+    color: var(--ink);
+    min-height: 100vh;
+    background-image:
+      radial-gradient(circle at 15% 0%, rgba(232,163,61,0.06), transparent 45%),
+      repeating-linear-gradient(180deg, rgba(255,255,255,0.012) 0px, rgba(255,255,255,0.012) 1px, transparent 1px, transparent 3px);
+  }
+
+  .kicker {
+    display: block;
+    font-family: var(--font-mono);
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: .14em;
+    color: var(--ink-dim);
+    text-transform: uppercase;
+  }
+
+  /* ---------- Header ---------- */
+  .header {
+    background: var(--bg-raised);
+    padding: 16px 28px;
+    border-bottom: 1px solid var(--line);
+    display: flex;
+    align-items: center;
+    gap: var(--sp-4);
+    position: relative;
+  }
+  .header::before, .header::after {
+    content: ""; position: absolute; top: 8px; width: 4px; height: 4px;
+    border-radius: 50%; background: var(--line); box-shadow: inset 0 1px 1px rgba(0,0,0,.6);
+  }
+  .header::before { left: 8px; }
+  .header::after { right: 8px; }
+  .header-bottom-line {
+    position: absolute; left: 0; right: 0; bottom: -1px; height: 1px;
+    background: linear-gradient(90deg, var(--amber) 0%, transparent 40%);
+  }
+  .header h1 {
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-size: 30px;
+    letter-spacing: .01em;
+    text-transform: uppercase;
+    color: var(--ink);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    line-height: 1;
+  }
+  .header h1 .dot {
+    width: 9px; height: 9px; border-radius: 50%;
+    background: var(--amber);
+    box-shadow: 0 0 9px var(--amber);
+  }
+  .header .tagline {
+    color: var(--ink-dim); font-size: 13px; font-family: var(--font-mono);
+    letter-spacing: .06em; text-transform: uppercase; font-weight: 700;
+  }
+  .header-actions {
+    margin-left: auto;
+    display: flex;
+    gap: var(--sp-2);
+  }
+  .chip-btn {
+    padding: 8px 14px;
+    background: var(--bg-sunken);
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    color: var(--ink-dim);
+    cursor: pointer;
+    font-size: 12.5px;
+    font-family: var(--font-body);
+    font-weight: 500;
+    transition: border-color .15s, color .15s;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.03);
+  }
+  .chip-btn:hover { border-color: var(--amber-dim); color: var(--ink); }
+  .chip-btn.save { color: var(--teal); border-color: rgba(95,214,196,0.3); display: none; }
+  .chip-btn.save:hover { border-color: var(--teal); }
+
+  /* ---------- Flow bar (replaces panel titles) ---------- */
+  .flow-bar {
+    background: var(--bg-raised);
+    padding: 18px 0 16px;
+    border-bottom: 1px solid var(--line);
+    display: grid;
+    grid-template-columns: 1.1fr 1fr 1fr;
+  }
+  .flow-step {
+    position: relative;
+    display: flex; flex-direction: column; align-items: center; gap: 6px;
+    z-index: 1;
+  }
+  .flow-step::before, .flow-step::after {
+    content: "";
+    position: absolute; top: 15px; height: 1px;
+    background: var(--line); z-index: 0;
+    transition: background .25s;
+  }
+  .flow-step::before { left: 0; right: 50%; margin-right: 16px; }
+  .flow-step::after { left: 50%; right: 0; margin-left: 16px; }
+  .flow-step:first-child::before, .flow-step:last-child::after { display: none; }
+  .flow-step.line-in-active::before { background: var(--amber); }
+  .flow-step.line-out-active::after { background: var(--amber); }
+
+  .flow-dot {
+    width: 30px; height: 30px; border-radius: 50%;
+    background: var(--bg-lcd); border: 1px solid var(--line);
+    display: flex; align-items: center; justify-content: center;
+    color: var(--ink-faint); font-size: 15px;
+    transition: border-color .25s, color .25s, box-shadow .25s;
+  }
+  .flow-step.active .flow-dot { border-color: var(--amber); color: var(--amber); box-shadow: 0 0 8px rgba(232,163,61,.4); }
+  .flow-label {
+    font-family: var(--font-mono); font-size: 10px; color: var(--ink-faint);
+    letter-spacing: .1em; text-transform: uppercase; transition: color .25s;
+  }
+  .flow-step.active .flow-label { color: var(--amber); }
+
+  .sr-only {
+    position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+    overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0;
+  }
+
+  /* ---------- Favorites drawer ---------- */
+  #favPanel {
+    display: none;
+    background: var(--bg-sunken);
+    border-bottom: 1px solid var(--line);
+    padding: var(--sp-4) 28px;
+  }
+  #favPanel .label { margin-bottom: var(--sp-3); font-size: 12px; color: var(--ink-dim); }
+  #favList { display: flex; flex-wrap: wrap; gap: var(--sp-2); }
+  .fav-card {
+    background: var(--bg-raised);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-sm);
+    padding: 8px 12px;
+    cursor: pointer;
+    max-width: 240px;
+    transition: border-color .15s, transform .1s;
+  }
+  .fav-card:hover { border-color: var(--amber); transform: translateY(-1px); }
+  .fav-title { font-size: 13px; color: var(--ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .fav-meta { font-size: 11px; color: var(--ink-faint); margin-top: 2px; font-family: var(--font-mono); }
+
+  /* ---------- Layout ---------- */
+  .container {
+    display: grid;
+    grid-template-columns: 1.1fr 1fr 1fr;
+    gap: 20px;
+    padding: 20px 28px 28px;
+    min-height: calc(100vh - 68px);
+  }
+  .panel {
+    background: rgba(32, 29, 23, 0.5);
+    backdrop-filter: blur(20px) saturate(150%);
+    -webkit-backdrop-filter: blur(20px) saturate(150%);
+    border: 1px solid rgba(237, 230, 214, 0.09);
+    border-radius: 20px;
+    padding: var(--sp-5) var(--sp-4) var(--sp-4);
+    overflow-y: auto;
+    position: relative;
+    box-shadow:
+      0 12px 32px rgba(0,0,0,.35),
+      inset 0 1px 0 rgba(255,255,255,.05);
+  }
+
+  /* ---------- Form elements ---------- */
+  label.field-label { display: block; margin-bottom: 6px; }
+
+  input[type=text], select {
+    width: 100%;
+    padding: 11px 12px;
+    background: var(--bg-lcd);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-sm);
+    color: var(--ink);
+    font-size: 14px;
+    font-family: var(--font-body);
+    margin-bottom: var(--sp-3);
+    transition: border-color .15s;
+    box-shadow: inset 0 1px 3px rgba(0,0,0,.35);
+  }
+  input[type=text]:focus, select:focus { outline: none; border-color: var(--amber); }
+  input[type=text]::placeholder { color: var(--ink-faint); }
+  select { cursor: pointer; }
+
+  /* ---------- Buttons: equipment-key feel ---------- */
+  button {
+    padding: 11px 16px;
+    border-radius: var(--radius-sm);
+    border: none;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 600;
+    font-family: var(--font-body);
+    transition: filter .15s, transform .08s, opacity .15s;
+    position: relative;
+  }
+  button:active { transform: translateY(1px); }
+  button:disabled { opacity: .35; cursor: not-allowed; }
+
+  .btn-primary {
+    background: var(--amber); color: #1a1509; width: 100%; margin-bottom: var(--sp-2);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.35), 0 2px 0 var(--amber-dim);
+  }
+  .btn-primary:hover:not(:disabled) { filter: brightness(1.08); }
+  .btn-primary:active:not(:disabled) { box-shadow: inset 0 1px 0 rgba(255,255,255,.2); }
+
+  .btn-secondary {
+    background: var(--bg-raised); border: 1px solid var(--line); color: var(--ink-dim); width: 100%;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.03);
+  }
+  .btn-secondary:hover:not(:disabled) { border-color: var(--ink-faint); color: var(--ink); }
+
+  .btn-record {
+    background: var(--bg-lcd); border: 1px solid var(--coral); color: var(--coral);
+    width: 100%; margin-bottom: var(--sp-2);
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+  }
+  .btn-record.recording {
+    background: var(--coral); color: #1a0d0a; border-color: var(--coral);
+    animation: pulse-bg 1.4s ease-in-out infinite;
+  }
+  @keyframes pulse-bg { 0%,100% { filter: brightness(1); } 50% { filter: brightness(1.25); } }
+
+  .btn-success {
+    background: var(--teal); color: #08201b; width: 100%; margin-bottom: var(--sp-2);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.35), 0 2px 0 #2e8a78;
+  }
+  .btn-success:hover:not(:disabled) { filter: brightness(1.08); }
+
+  .controls { display: grid; grid-template-columns: 1fr 1fr; gap: var(--sp-2); margin-top: var(--sp-2); }
+
+  /* ---------- Segment / progress: LCD readout ---------- */
+  .segment-info {
+    background: var(--bg-lcd);
+    padding: 10px 12px;
+    border-radius: var(--radius-sm);
+    margin-bottom: var(--sp-2);
+    font-family: var(--font-mono);
+    font-size: 13px;
+    color: var(--teal);
+    display: flex;
+    justify-content: space-between;
+    border: 1px solid var(--line-soft);
+    box-shadow: inset 0 1px 4px rgba(0,0,0,.5);
+    text-shadow: 0 0 6px rgba(95,214,196,.35);
+  }
+  .segment-info .seg-label { color: var(--ink-faint); font-size: 10px; margin-right: 4px; letter-spacing: .08em; }
+  .segment-info b { color: var(--amber); font-weight: 700; text-shadow: 0 0 6px rgba(232,163,61,.4); }
+  .progress-bar { height: 3px; background: var(--line); border-radius: 2px; margin-bottom: var(--sp-4); overflow: hidden; }
+  .progress-fill { height: 100%; background: var(--amber); border-radius: 2px; transition: width 0.3s; box-shadow: 0 0 6px var(--amber); }
+
+  #player { width: 100%; border-radius: var(--radius-sm); margin-bottom: var(--sp-3); overflow: hidden; border: 1px solid var(--line-soft); }
+
+  /* ---------- Waveform signature ---------- */
+  .wave { display: flex; align-items: flex-end; gap: 3px; height: 20px; }
+  .wave span { width: 3px; background: currentColor; border-radius: 2px; height: 6px; animation: wave-bounce 0.9s ease-in-out infinite; opacity: .85; }
+  .wave span:nth-child(1){animation-delay:0s} .wave span:nth-child(2){animation-delay:.1s}
+  .wave span:nth-child(3){animation-delay:.2s} .wave span:nth-child(4){animation-delay:.3s}
+  .wave span:nth-child(5){animation-delay:.4s}
+  @keyframes wave-bounce { 0%,100% { height: 5px; } 50% { height: 18px; } }
+
+  /* ---------- Transcript / recall areas ---------- */
+  .field-row { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: var(--sp-2); }
+  .field-row .field-label { margin-bottom: 0; }
+  .ghost-btn {
+    padding: 4px 10px; font-size: 12px; background: transparent;
+    border: 1px solid var(--line); border-radius: 999px; color: var(--ink-dim); cursor: pointer;
+  }
+  .ghost-btn:hover { border-color: var(--ink-faint); color: var(--ink); }
+
+  .transcript-text {
+    font-size: 15px; line-height: 1.75; padding: 14px;
+    background: var(--bg-lcd); border-radius: var(--radius-sm);
+    min-height: 76px; border: 1px solid var(--line-soft);
+    box-shadow: inset 0 1px 4px rgba(0,0,0,.4);
+  }
+  .transcript-text.hidden { filter: blur(6px); cursor: pointer; user-select: none; }
+
+  .divider { margin: var(--sp-4) 0; border-top: 1px solid var(--line-soft); position: relative; }
+  .divider::after {
+    content: ""; position: absolute; left: 50%; top: -3px; transform: translateX(-50%);
+    width: 24px; height: 5px; background: var(--bg); border-left: 1px solid var(--line-soft); border-right: 1px solid var(--line-soft);
+  }
+
+  .user-text {
+    font-size: 15px; line-height: 1.75; padding: 14px;
+    background: var(--bg-lcd); border-radius: var(--radius-sm);
+    min-height: 76px; color: var(--ink-dim);
+    border: 1px solid var(--line-soft);
+    margin-bottom: var(--sp-3);
+    box-shadow: inset 0 1px 4px rgba(0,0,0,.4);
+  }
+
+  .recording-time {
+    text-align: center; font-family: var(--font-mono); font-size: 26px;
+    color: var(--coral); font-weight: 700; margin: var(--sp-2) 0;
+    letter-spacing: .04em; text-shadow: 0 0 10px rgba(232,115,95,.5);
+  }
+
+  .status {
+    font-size: 12.5px; color: var(--ink-dim); margin-bottom: var(--sp-3);
+    font-family: var(--font-body);
+  }
+
+  /* ---------- Scoring: LCD dial ---------- */
+  .score-empty { text-align:center; padding: 56px 0 20px; color: var(--ink-dim); font-size: 13.5px; }
+
+  .score-dial {
+    background: var(--bg-lcd); border: 1px solid var(--line-soft); border-radius: var(--radius);
+    box-shadow: inset 0 2px 8px rgba(0,0,0,.5);
+    padding: var(--sp-4) 0; margin-bottom: var(--sp-3);
+  }
+  .score-badge {
+    font-family: var(--font-display); font-size: 68px; font-weight: 800;
+    text-align: center; line-height: 1;
+  }
+  .score-unit { text-align: center; font-family: var(--font-mono); font-size: 11px; color: var(--ink-faint); letter-spacing: .1em; margin-top: 4px; }
+
+  .tag-group-label {
+    margin-top: var(--sp-3); margin-bottom: 4px; font-size: 11px; color: var(--ink-dim);
+    font-family: var(--font-mono); text-transform: uppercase; letter-spacing: .08em;
+  }
+
+  .tag {
+    display: inline-block; padding: 4px 10px; border-radius: 999px;
+    font-size: 12.5px; margin: 4px 4px 0 0; font-family: var(--font-body); font-weight: 500;
+  }
+  .tag-correct { background: rgba(95,214,196,0.12); color: var(--teal); border: 1px solid rgba(95,214,196,0.3); }
+  .tag-missed  { background: rgba(217,87,60,0.12); color: var(--coral); border: 1px solid rgba(217,87,60,0.3); }
+  .tag-wrong   { background: rgba(169,123,196,0.14); color: var(--violet); border: 1px solid rgba(169,123,196,0.32); }
+
+  .comment {
+    font-size: 13.5px; color: var(--ink-dim); margin-top: var(--sp-3);
+    padding: 12px; background: var(--bg-lcd); border-radius: var(--radius-sm);
+    border-left: 2px solid var(--amber); line-height: 1.6;
+  }
+
+  .summary-card { background: var(--bg-lcd); border: 1px solid var(--line-soft); border-radius: var(--radius); padding: var(--sp-4); margin-bottom: var(--sp-3); box-shadow: inset 0 2px 8px rgba(0,0,0,.5); }
+  .grade { font-family: var(--font-display); font-size: 72px; font-weight: 800; text-align: center; line-height: 1; }
+  .vocab-item { padding: 10px 12px; border-left: 2px solid var(--amber); margin-bottom: var(--sp-2); background: var(--bg-lcd); border-radius: 0 var(--radius-sm) var(--radius-sm) 0; }
+  .vocab-word { font-weight: 700; color: var(--amber); font-family: var(--font-display); font-size: 17px; letter-spacing: .02em; }
+  .vocab-meaning { font-size: 13px; color: var(--ink-dim); margin-top: 2px; }
+  .tip-item { padding: 9px 0; font-size: 13.5px; border-bottom: 1px solid var(--line-soft); color: var(--ink-dim); }
+  .tip-item:last-child { border-bottom: none; }
+
+  /* ---------- Responsive ---------- */
+  @media (max-width: 900px) {
+    .container { grid-template-columns: 1fr; }
+    .header { flex-wrap: wrap; }
+  }
+
+  /* ---------- Neon lightning background ---------- */
+  .lightning-bg {
+    position: fixed;
+    top: -5%; left: 50%;
+    width: 700px; height: 92vh;
+    transform: translateX(-50%);
+    z-index: -1;
+    pointer-events: none;
+    opacity: 0.85;
+    animation: neon-breathe 4s ease-in-out infinite;
+  }
+  .lightning-bg svg { width: 100%; height: 100%; }
+  .lightning-bg path {
+    filter:
+      drop-shadow(0 0 6px #f5e14a)
+      drop-shadow(0 0 18px #f5e14a)
+      drop-shadow(0 0 42px rgba(245,225,74,.65));
+  }
+  @keyframes neon-breathe {
+    0%, 100% { opacity: .25; }
+    50%      { opacity: .9; }
+  }
+
+  /* ---------- Accessibility ---------- */
+  button:focus-visible, input:focus-visible, select:focus-visible, .fav-card:focus-visible {
+    outline: 2px solid var(--amber); outline-offset: 2px;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    * { animation: none !important; transition: none !important; }
+  }
 </style>
 </head>
 <body>
 
+<div class="lightning-bg" aria-hidden="true">
+  <svg viewBox="0 0 200 700" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M120 10 L55 340 L100 340 L70 690 L160 300 L110 300 Z" fill="#f5e14a"/>
+  </svg>
+</div>
+
 <div class="header">
-  <h1>🎧 ShadowSpeak</h1>
-  <span>英语精听练习工具</span>
-  <div style="margin-left:auto;display:flex;gap:8px;">
-    <button onclick="toggleFavorites()" style="padding:6px 14px;background:#2a2a4a;border:none;border-radius:6px;color:#aaa;cursor:pointer;font-size:13px;">⭐ 收藏夹</button>
-    <button onclick="saveFavorite()" id="saveBtn" style="padding:6px 14px;background:#1a5c2a;border:none;border-radius:6px;color:#4ade80;cursor:pointer;font-size:13px;display:none;">💾 收藏此视频</button>
+  <div style="display:flex;align-items:flex-end;gap:10px;">
+    <h1><span class="dot"></span>ShadowSpeak</h1>
+    <span class="tagline" style="margin-bottom:3px;">Deep Listening Practice</span>
+  </div>
+  <div class="header-actions">
+    <button class="chip-btn" onclick="toggleFavorites()">⭐ Saved</button>
+    <button class="chip-btn save" onclick="saveFavorite()" id="saveBtn">💾 Save</button>
+  </div>
+  <div class="header-bottom-line"></div>
+</div>
+
+<div class="flow-bar" id="flowBar">
+  <div class="flow-step active" id="flowStep1">
+    <div class="flow-dot"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="6 3 20 12 6 21 6 3"></polygon></svg></div>
+    <div class="flow-label">Watch</div>
+  </div>
+  <div class="flow-step" id="flowStep2">
+    <div class="flow-dot"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path><line x1="12" y1="19" x2="12" y2="23"></line><line x1="8" y1="23" x2="16" y2="23"></line></svg></div>
+    <div class="flow-label">Practice</div>
+  </div>
+  <div class="flow-step" id="flowStep3">
+    <div class="flow-dot"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="6" y1="20" x2="6" y2="16"></line><line x1="12" y1="20" x2="12" y2="10"></line><line x1="18" y1="20" x2="18" y2="4"></line></svg></div>
+    <div class="flow-label">Feedback</div>
   </div>
 </div>
 
-<div id="favPanel" style="display:none;background:#1a1a2e;border-bottom:1px solid #2a2a4a;padding:12px 24px;">
-  <div style="font-size:13px;color:#888;margin-bottom:8px;">收藏的视频</div>
-  <div id="favList" style="display:flex;flex-wrap:wrap;gap:8px;"></div>
+<div id="favPanel">
+  <div class="label">Saved videos</div>
+  <div id="favList"></div>
 </div>
 
 <div class="container">
-  <div class="panel">
-    <h2>📺 视频控制</h2>
-    <input type="text" id="urlInput" placeholder="粘贴YouTube视频链接...">
+
+  <div class="panel" aria-label="Video control">
+    <h2 class="sr-only">Video control</h2>
+
+    <label class="field-label"><span class="kicker">URL</span></label>
+    <input type="text" id="urlInput" placeholder="Paste video link…">
+
+    <label class="field-label"><span class="kicker">Segment length</span></label>
     <select id="segmentLength">
-      <option value="10">每段10秒</option>
-      <option value="15" selected>每段15秒</option>
-      <option value="20">每段20秒</option>
-      <option value="30">每段30秒</option>
+      <option value="10">10s</option>
+      <option value="15" selected>15s</option>
+      <option value="20">20s</option>
+      <option value="30">30s</option>
     </select>
-    <button class="btn-primary" onclick="loadVideo()">🔍 加载视频</button>
+    <button class="btn-primary" onclick="loadVideo()">Load video</button>
+
     <div id="player"></div>
+
     <div class="segment-info">
-      第 <span id="currentSeg">-</span> 段 / 共 <span id="totalSeg">-</span> 段
-      &nbsp;|&nbsp; <span id="segTime">-</span>
+      <span><span class="seg-label">SEG</span><b id="currentSeg">-</b> / <span id="totalSeg">-</span></span>
+      <span id="segTime">-</span>
     </div>
     <div class="progress-bar"><div class="progress-fill" id="progressFill" style="width:0%"></div></div>
+
     <div class="controls">
-      <button class="btn-secondary" onclick="prevSegment()">⏮ 上一段</button>
-      <button class="btn-secondary" onclick="replaySegment()">🔁 重播</button>
-      <button class="btn-secondary" onclick="playSegment()">▶ 播放</button>
-      <button class="btn-secondary" onclick="skipSegment()">⏭ 跳过</button>
+      <button class="btn-secondary" onclick="prevSegment()">⏮ Prev</button>
+      <button class="btn-secondary" onclick="replaySegment()">🔁 Replay</button>
+      <button class="btn-secondary" onclick="playSegment()">▶ Play</button>
+      <button class="btn-secondary" onclick="skipSegment()">⏭ Skip</button>
     </div>
   </div>
 
-  <div class="panel">
-    <h2>🎙 复述区</h2>
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
-      <span style="font-size:13px;color:#888;">原文</span>
-      <button style="padding:4px 10px;font-size:12px;background:#2a2a4a;border:none;border-radius:4px;color:#aaa;cursor:pointer;" onclick="toggleText()">👁 显示/隐藏</button>
+  <div class="panel" aria-label="Recall">
+    <h2 class="sr-only">Recall</h2>
+
+    <div class="field-row">
+      <label class="field-label"><span class="kicker">Original</span></label>
+      <button class="ghost-btn" onclick="toggleText()">👁 Show/hide</button>
     </div>
-    <div class="transcript-text hidden" id="originalText">加载视频后显示原文...</div>
-    <div style="margin:12px 0;border-top:1px solid #2a2a4a;"></div>
-    <div style="font-size:13px;color:#888;margin-bottom:6px;">你的复述</div>
-    <div class="user-text" id="userText">录音后显示转写文字...</div>
+    <div class="transcript-text hidden" id="originalText">Load a video to see the transcript</div>
+
+    <div class="divider"></div>
+
+    <label class="field-label"><span class="kicker">Your recall</span></label>
+    <div class="user-text" id="userText">Your transcript appears after recording</div>
+
     <div class="recording-time" id="recordingTime" style="display:none">0:00</div>
-    <div class="status" id="recordStatus">等待播放视频...</div>
-    <button class="btn-record" id="recordBtn" onclick="toggleRecord()" disabled>🎙 开始复述</button>
-    <button class="btn-success" id="submitBtn" onclick="submitScore()" disabled>✅ 提交复述</button>
-    <button class="btn-primary" id="summaryBtn" onclick="getSummary()" style="display:none">📊 生成总结报告</button>
+    <div class="status" id="recordStatus">Waiting for playback…</div>
+
+    <button class="btn-record" id="recordBtn" onclick="toggleRecord()" disabled>
+      <span class="wave"><span></span><span></span><span></span><span></span><span></span></span>
+      Start
+    </button>
+    <button class="btn-success" id="submitBtn" onclick="submitScore()" disabled>✅ Submit</button>
+    <button class="btn-primary" id="summaryBtn" onclick="getSummary()" style="display:none">📊 Generate report</button>
   </div>
 
-  <div class="panel">
-    <h2>📊 评分反馈</h2>
+  <div class="panel" aria-label="Feedback">
+    <h2 class="sr-only">Feedback</h2>
     <div id="scoreArea">
-      <div style="text-align:center;color:#444;padding:40px 0;font-size:14px;">完成复述后查看评分</div>
+      <div class="score-empty">Score appears after recall</div>
     </div>
   </div>
+
 </div>
 
 <script>
@@ -126,6 +551,15 @@ let textVisible = false, recordTimer = null, recordSeconds = 0;
 let allScores = [], allMissed = [];
 let segmentDone = false;
 let favoritesCache = [];
+
+function setFlowStep(n) {
+  for (let i = 1; i <= 3; i++) {
+    const step = document.getElementById('flowStep' + i);
+    step.classList.toggle('active', i === n);
+    step.classList.toggle('line-in-active', i <= n && i > 1);
+    step.classList.toggle('line-out-active', i < n);
+  }
+}
 
 const tag = document.createElement('script');
 tag.src = "https://www.youtube.com/iframe_api";
@@ -153,17 +587,18 @@ function checkSegmentEnd() {
     if (seg && t >= seg.end) {
       player.pauseVideo();
       clearInterval(segEndTimer);
-      setStatus('播放完毕 — 点击「开始复述」');
+      setStatus('Done playing — tap Start');
       document.getElementById('recordBtn').disabled = false;
       document.getElementById('originalText').classList.remove('hidden');
+      setFlowStep(2);
     }
   }, 200);
 }
 
 async function loadVideo() {
   const url = document.getElementById('urlInput').value.trim();
-  if (!url) return alert('请输入YouTube链接');
-  setStatus('正在获取字幕...');
+  if (!url) return alert('Please enter a YouTube link');
+  setStatus('Fetching transcript…');
   try {
     const res = await fetch('/transcript', {
       method: 'POST',
@@ -179,9 +614,10 @@ async function loadVideo() {
     document.getElementById('totalSeg').textContent = segments.length;
     currentSegIdx = 0;
     updateSegInfo();
-    setStatus('视频加载完毕 — 点击「播放」开始');
+    gtag('event', 'video_loaded', { segment_count: segments.length, segment_length: segLen });
+    setStatus('Ready — tap Play');
     document.getElementById('saveBtn').style.display = 'inline-block';
-  } catch(e) { alert('加载失败：' + e.message); }
+  } catch(e) { alert('Load failed: ' + e.message); }
 }
 
 function buildSegments(transcript, segLen) {
@@ -199,14 +635,15 @@ function updateSegInfo() {
   const seg = segments[currentSegIdx];
   if (!seg) return;
   document.getElementById('currentSeg').textContent = currentSegIdx + 1;
-  document.getElementById('segTime').textContent = fmt(seg.start) + ' - ' + fmt(seg.end);
+  document.getElementById('segTime').textContent = fmt(seg.start) + ' – ' + fmt(seg.end);
   document.getElementById('progressFill').style.width = ((currentSegIdx+1)/segments.length*100) + '%';
   document.getElementById('originalText').textContent = seg.text;
   document.getElementById('originalText').classList.add('hidden');
-  document.getElementById('userText').textContent = '录音后显示转写文字...';
+  document.getElementById('userText').textContent = 'Your transcript appears after recording';
   document.getElementById('recordBtn').disabled = true;
   document.getElementById('submitBtn').disabled = true;
   segmentDone = false;
+  setFlowStep(1);
 }
 
 function fmt(s) {
@@ -219,19 +656,20 @@ function playSegment() {
   const seg = segments[currentSegIdx];
   player.seekTo(seg.start);
   player.playVideo();
-  setStatus('播放中...');
+  setStatus('Playing…');
   document.getElementById('recordBtn').disabled = true;
+  gtag('event', 'segment_played', { segment_index: currentSegIdx });
 }
 
 function replaySegment() { playSegment(); }
 
 function prevSegment() {
-  if (currentSegIdx > 0) { currentSegIdx--; updateSegInfo(); setStatus('点击「播放」开始'); }
+  if (currentSegIdx > 0) { currentSegIdx--; updateSegInfo(); setStatus('Tap Play'); }
 }
 
 function skipSegment() {
   if (currentSegIdx < segments.length - 1) {
-    currentSegIdx++; updateSegInfo(); setStatus('已跳过 — 点击「播放」继续');
+    currentSegIdx++; updateSegInfo(); setStatus('Skipped — tap Play');
   } else { showSummaryBtn(); }
 }
 
@@ -246,7 +684,8 @@ async function toggleRecord() {
       mediaRecorder.start();
       document.getElementById('originalText').classList.add('hidden');
       isRecording = true;
-      document.getElementById('recordBtn').textContent = '⏹ 停止录音';
+      document.getElementById('recordBtn').innerHTML =
+        '<span class="wave"><span></span><span></span><span></span><span></span><span></span></span> Stop';
       document.getElementById('recordBtn').classList.add('recording');
       document.getElementById('recordingTime').style.display = 'block';
       recordSeconds = 0;
@@ -255,16 +694,18 @@ async function toggleRecord() {
         const m = Math.floor(recordSeconds/60), s = recordSeconds%60;
         document.getElementById('recordingTime').textContent = m+':'+String(s).padStart(2,'0');
       }, 1000);
-      setStatus('录音中...');
-    } catch(e) { alert('无法访问麦克风：' + e.message); }
+      setStatus('Recording…');
+      gtag('event', 'recording_started', { segment_index: currentSegIdx });
+    } catch(e) { alert('Microphone access denied: ' + e.message); }
   } else {
     mediaRecorder.stop();
     isRecording = false;
-    document.getElementById('recordBtn').textContent = '🎙 重新录音';
+    document.getElementById('recordBtn').innerHTML =
+      '<span class="wave"><span></span><span></span><span></span><span></span><span></span></span> Retry';
     document.getElementById('recordBtn').classList.remove('recording');
     document.getElementById('recordingTime').style.display = 'none';
     clearInterval(recordTimer);
-    setStatus('正在转写...');
+    setStatus('Transcribing…');
   }
 }
 
@@ -275,18 +716,19 @@ async function processAudio() {
   try {
     const res = await fetch('/transcribe', {method:'POST', body: formData});
     const data = await res.json();
-    if (data.error) { setStatus('转写失败：' + data.error); return; }
+    if (data.error) { setStatus('Transcription failed: ' + data.error); return; }
     document.getElementById('userText').textContent = data.text;
     document.getElementById('submitBtn').disabled = false;
-    setStatus('转写完成 — 点击「提交复述」评分');
-  } catch(e) { setStatus('转写失败：' + e.message); }
+    setStatus('Transcribed — tap Submit to score');
+  } catch(e) { setStatus('Transcription failed: ' + e.message); }
 }
 
 async function submitScore() {
   const original = segments[currentSegIdx].text;
   const userText = document.getElementById('userText').textContent;
-  setStatus('AI评分中...');
+  setStatus('Scoring…');
   document.getElementById('submitBtn').disabled = true;
+  gtag('event', 'recording_submitted', { segment_index: currentSegIdx });
   try {
     const res = await fetch('/score', {
       method:'POST', headers:{'Content-Type':'application/json'},
@@ -294,36 +736,41 @@ async function submitScore() {
     });
     const data = await res.json();
     renderScore(data);
+    setFlowStep(3);
     allScores.push({score: data.score, idx: currentSegIdx});
     if (data.missed) allMissed.push(...data.missed);
-    setStatus('评分完成 — 点击「下一段」继续');
+    gtag('event', 'score_viewed', { score: data.score, segment_index: currentSegIdx });
+    setStatus('Scored — tap Next');
     segmentDone = true;
     if (currentSegIdx < segments.length - 1) {
       const nextBtn = document.createElement('button');
       nextBtn.className = 'btn-primary';
-      nextBtn.textContent = '▶ 下一段';
+      nextBtn.textContent = '▶ Next';
       nextBtn.style.marginTop = '8px';
-      nextBtn.onclick = () => { currentSegIdx++; updateSegInfo(); setStatus('点击「播放」开始'); nextBtn.remove(); };
+      nextBtn.onclick = () => { currentSegIdx++; updateSegInfo(); setStatus('Tap Play'); nextBtn.remove(); };
       document.querySelector('.panel:nth-child(2)').appendChild(nextBtn);
     } else { showSummaryBtn(); }
-  } catch(e) { setStatus('评分失败：' + e.message); }
+  } catch(e) { setStatus('Scoring failed: ' + e.message); }
 }
 
 function renderScore(data) {
   const score = data.score || 0;
-  const color = score >= 80 ? '#4ade80' : score >= 60 ? '#fbbf24' : '#f87171';
-  let html = `<div class="score-badge" style="color:${color}">${score}</div>`;
+  const color = score >= 80 ? 'var(--teal)' : score >= 60 ? 'var(--violet)' : 'var(--coral)';
+  let html = `<div class="score-dial"><div class="score-badge" style="color:${color}">${score}</div><div class="score-unit">SCORE / 100</div></div>`;
   if (data.correct?.length) {
-    html += '<div style="margin-top:8px;font-size:12px;color:#888;">说对了</div>';
+    html += '<div class="tag-group-label">Correct</div><div>';
     html += data.correct.map(w => `<span class="tag tag-correct">✓ ${w}</span>`).join('');
+    html += '</div>';
   }
   if (data.missed?.length) {
-    html += '<div style="margin-top:8px;font-size:12px;color:#888;">漏掉了</div>';
+    html += '<div class="tag-group-label">Missed</div><div>';
     html += data.missed.map(w => `<span class="tag tag-missed">✗ ${w}</span>`).join('');
+    html += '</div>';
   }
   if (data.wrong?.length) {
-    html += '<div style="margin-top:8px;font-size:12px;color:#888;">说错了</div>';
+    html += '<div class="tag-group-label">Wrong</div><div>';
     html += data.wrong.map(w => `<span class="tag tag-wrong">⚠ ${w}</span>`).join('');
+    html += '</div>';
   }
   if (data.comment) html += `<div class="comment">💬 ${data.comment}</div>`;
   document.getElementById('scoreArea').innerHTML = html;
@@ -331,12 +778,12 @@ function renderScore(data) {
 
 function showSummaryBtn() {
   document.getElementById('summaryBtn').style.display = 'block';
-  setStatus('🎉 全部完成！点击「生成总结报告」');
+  setStatus('All done — generate your report');
 }
 
 async function getSummary() {
   document.getElementById('summaryBtn').disabled = true;
-  setStatus('生成报告中...');
+  setStatus('Generating report…');
   try {
     const res = await fetch('/summary', {
       method:'POST', headers:{'Content-Type':'application/json'},
@@ -344,30 +791,31 @@ async function getSummary() {
     });
     const data = await res.json();
     renderSummary(data);
-  } catch(e) { setStatus('生成失败：' + e.message); }
+    gtag('event', 'report_generated', { overall_score: data.overall_score, grade: data.grade, segments_completed: allScores.length });
+  } catch(e) { setStatus('Generation failed: ' + e.message); }
 }
 
 function renderSummary(data) {
-  const gradeColor = {'A':'#4ade80','B':'#a3e635','C':'#fbbf24','D':'#f87171'}[data.grade] || '#4a9eff';
+  const gradeColor = {'A':'var(--teal)','B':'#a8d97a','C':'var(--violet)','D':'var(--coral)'}[data.grade] || 'var(--amber)';
   let html = `<div class="summary-card">
     <div class="grade" style="color:${gradeColor}">${data.grade || 'B'}</div>
-    <div style="text-align:center;font-size:28px;color:#aaa;margin-bottom:8px;">${data.overall_score}分</div>
-    <div style="font-size:13px;color:#aaa;text-align:center;">${data.summary || ''}</div>
+    <div style="text-align:center;font-family:var(--font-mono);font-size:22px;color:var(--ink-dim);margin:6px 0 8px;">${data.overall_score}<span style="font-size:12px;color:var(--ink-faint);"> / 100</span></div>
+    <div style="font-size:13.5px;color:var(--ink-dim);text-align:center;line-height:1.6;">${data.summary || ''}</div>
   </div>`;
   if (data.weak_spots?.length) {
-    html += '<div style="font-size:13px;color:#888;margin:8px 0;">需要改进</div>';
+    html += '<div class="tag-group-label" style="margin:12px 0 6px;">Needs work</div>';
     html += data.weak_spots.map(w => `<div class="tip-item">⚠ ${w}</div>`).join('');
   }
   if (data.vocabulary?.length) {
-    html += '<div style="font-size:13px;color:#888;margin:8px 0;">词汇解释</div>';
+    html += '<div class="tag-group-label" style="margin:12px 0 6px;">Vocabulary</div>';
     html += data.vocabulary.map(v => `<div class="vocab-item">
       <div class="vocab-word">${v.word}</div>
       <div class="vocab-meaning">${v.meaning}</div>
-      <div style="font-size:12px;color:#666;margin-top:2px;">${v.example || ''}</div>
+      <div style="font-size:12px;color:var(--ink-faint);margin-top:2px;">${v.example || ''}</div>
     </div>`).join('');
   }
   if (data.tips?.length) {
-    html += '<div style="font-size:13px;color:#888;margin:8px 0;">提升建议</div>';
+    html += '<div class="tag-group-label" style="margin:12px 0 6px;">Tips</div>';
     html += data.tips.map(t => `<div class="tip-item">💡 ${t}</div>`).join('');
   }
   document.getElementById('scoreArea').innerHTML = html;
@@ -383,7 +831,7 @@ function setStatus(msg) {
 
 async function toggleFavorites() {
   const panel = document.getElementById('favPanel');
-  if (panel.style.display === 'none') {
+  if (panel.style.display === 'none' || !panel.style.display) {
     await loadFavorites();
     panel.style.display = 'block';
   } else {
@@ -397,13 +845,13 @@ async function loadFavorites() {
   favoritesCache = favs;
   const list = document.getElementById('favList');
   if (!favs.length) {
-    list.innerHTML = '<span style="color:#444;font-size:13px;">还没有收藏</span>';
+    list.innerHTML = '<span style="color:var(--ink-faint);font-size:13px;">No favorites yet</span>';
     return;
   }
   list.innerHTML = favs.map((f, i) => `
-    <div class="fav-card" data-idx="${i}" onclick="loadFromFavoriteIdx(this)">
+    <div class="fav-card" data-idx="${i}" onclick="loadFromFavoriteIdx(this)" tabindex="0">
       <div class="fav-title">${f.title}</div>
-      <div class="fav-meta">${f.date} · 平均${f.score}分</div>
+      <div class="fav-meta">${f.date} · avg ${f.score}</div>
     </div>
   `).join('');
 }
@@ -420,13 +868,14 @@ async function saveFavorite() {
   const url = document.getElementById('urlInput').value.trim();
   if (!url) return;
   const avg = allScores.length ? Math.round(allScores.reduce((a,b) => a+b.score, 0) / allScores.length) : '-';
-  const date = new Date().toLocaleDateString('zh-CN');
+  const date = new Date().toLocaleDateString('en-US');
   await fetch('/favorites', {
     method: 'POST',
     headers: {'Content-Type':'application/json'},
     body: JSON.stringify({url, title: url, date, score: avg})
   });
-  alert('已收藏！');
+  alert('Saved!');
+  gtag('event', 'favorite_saved', { average_score: avg });
 }
 </script>
 </body>
